@@ -68,8 +68,8 @@
 #define _2DIG  2
 
 #define MB_RTU_Query_length   8
-#define MB_RTU_03H   
-#define MB_RTU_06H
+#define MB_RTU_03H            0x03
+#define MB_RTU_06H            0x06
 
 
 //===
@@ -83,28 +83,32 @@ extern uint8_t gu8A_SPI_ReadData[10];
 
 //---
 
-extern uint8_t gu8_Rx0ReceiveEnable;//need set 1
-extern uint8_t gu8A_Rx0ReceiveData[2048];
-extern uint16_t gu16_Rx0ReceiveIndex;
-extern uint8_t gu8_Rx0ReceiveCorrect;
+//extern uint8_t gu8_Rx0ReceiveEnable;//need set 1
+//extern uint8_t gu8A_Rx0ReceiveData[2048];
+//extern uint16_t gu16_Rx0ReceiveIndex;
+//extern uint8_t gu8_Rx0ReceiveCorrect;
 
 
-extern uint8_t gu8_Tx0TransmitEnable;
-extern uint8_t gu8A_Tx0TransmitData[100];
-extern uint8_t gu8_Tx0TransmitIndex;
-extern uint8_t gu8_Tx0TransmitEnd;
-extern uint8_t gu8_Tx0ContentSelect;
+//extern uint8_t gu8_Tx0TransmitEnable;
+//extern uint8_t gu8A_Tx0TransmitData[100];
+//extern uint8_t gu8_Tx0TransmitIndex;
+//extern uint8_t gu8_Tx0TransmitEnd;
+//extern uint8_t gu8_Tx0ContentSelect;
 
 //===
 typedef struct
-{
-    uint8_t gu8_recivEnable;//need set 1   
-    uint8_t gu8A_recivData[2048];
+{ 
+    uint8_t gu8A_recivData[128];
     uint16_t gu16_recivIndex;
-    uint8_t gu8_recivVerifyOK;
-	  uint8_t gu8A_modbusCRC16Content[10];
-	  uint16_t gu16_modbusCRC16Value;
-	  uint16_t gu16_startPoint;
+	  uint16_t gu16_recivSX;
+	  uint16_t gu16_recivEX;
+	  uint8_t gu8A_MB_CRC16Content[16];
+	  uint16_t gu16_MB_CRC16Value;
+	  uint16_t gu16_CRC16_MSB;
+    uint16_t gu16_CRC16_LSB;  
+	  
+	  uint8_t gu8fg_enable:1;//need set 1   
+	  uint8_t gu8fg_verifyOK:1;
 	
 }stru_RXD;
 extern stru_RXD   RXD1;
@@ -117,15 +121,17 @@ extern stru_RXD   RXD1;
 
 typedef struct
 {
-    uint8_t gu8_tramtEnable;
-    uint8_t gu8A_tramtData[500];
+    uint8_t gu8A_tramtData[128];
     uint16_t gu16_tramtIndex;
-    uint16_t gu16_tramtEND;
+    uint16_t gu16_tramtEnd;
     uint8_t gu8_contentSelect;	  
-	  uint8_t gu8A_modbusCRC16Content[100];
-    uint16_t gu16_modbusCRC16Value;	
+	  uint8_t gu8A_MB_CRC16Content[32];
+    uint16_t gu16_MB_CRC16Value;	
+	
+	  uint8_t gu8fg_enable:1;
 	  
 }stru_TXD;
+extern stru_TXD   TXD1;
 
 
 
@@ -143,14 +149,18 @@ typedef struct
 
 typedef struct
 {
-    uint8_t gu8_address;
-	  uint8_t gu8_functionCode;
-	  uint16_t gu16_number_of_data;
-	  uint16_t gu16_content[16];
-	  uint16_t gu16_CRC16;
+	  uint16_t gu16_holdregsr[32];
+	   
+	  uint16_t gu16_query_startAddrs;
+	  
+    uint8_t gu8_respn_deviceID;
+	  uint8_t gu8_respn_fc;
+	  uint16_t gu16_respn_nbr;
+	  uint16_t gu16_respn_contn[16];
+	  uint16_t gu16_respn_CRC16;
 	
-}stru_ModBus_response_protocol;
-
+}stru_ModBus_protocol;
+extern stru_ModBus_protocol   MB_procl;
 
 
 
@@ -180,10 +190,10 @@ typedef struct
 	  uint16_t gu16_STWD100NYN_WDI_ms;
     uint16_t gu16_pollTEMP_ms;
 	
-	  uint8_t gfg_startUp_7segmDspy:1;
-	  uint8_t gfg_DIGwait:1;
-    uint8_t gfg_STWD100NYN_WDI:1;
-    uint8_t gfg_pollTEMP:1;
+	  uint8_t gu8fg_startUp_7segmDspy:1;
+	  uint8_t gu8fg_DIGwait:1;
+    uint8_t gu8fg_STWD100NYN_WDI:1;
+    uint8_t gu8fg_pollTEMP:1;
    
 }stru_Timer0;
 

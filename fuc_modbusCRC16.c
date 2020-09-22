@@ -3,7 +3,7 @@
 #include "NUC100Series.h"
 
 
-unsigned char gu8A_modbusCRCHi[]=  
+unsigned char gu8A_modbusCRC16_MSB[]=  
 {  
 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,  
 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0,  
@@ -25,7 +25,7 @@ unsigned char gu8A_modbusCRCHi[]=
 0x40  
 };
 
-unsigned char gu8A_modbusCRCLo[]=  
+unsigned char gu8A_modbusCRC16_LSB[]=  
 {  
 0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6, 0x06, 0x07, 0xC7, 0x05, 0xC5, 0xC4,  
 0x04, 0xCC, 0x0C, 0x0D, 0xCD, 0x0F, 0xCF, 0xCE, 0x0E, 0x0A, 0xCA, 0xCB, 0x0B, 0xC9, 0x09,  
@@ -50,15 +50,15 @@ unsigned char gu8A_modbusCRCLo[]=
 
 uint16_t ModBus_CRC16(uint8_t *lu8_UpData , uint16_t lu16_length)  
 {  
-    uint8_t lu8_CRCHi = 0xff;  
-    uint8_t lu8_CRCLo = 0xff;  
-    uint8_t lu8_index;
+    uint8_t CRC_MSB = 0xFF;  
+    uint8_t CRC_LSB = 0xFF;  
+    uint8_t index;
   
     while(lu16_length --)  
     {  
-        lu8_index = lu8_CRCHi ^ *lu8_UpData ++;  
-        lu8_CRCHi = lu8_CRCLo ^ gu8A_modbusCRCHi[lu8_index];  
-        lu8_CRCLo = gu8A_modbusCRCLo[lu8_index];  
+        index = CRC_MSB ^ *lu8_UpData ++;  
+        CRC_MSB = CRC_LSB ^ gu8A_modbusCRC16_MSB[index];  
+        CRC_LSB = gu8A_modbusCRC16_LSB[index];  
     }  
-    return (lu8_CRCHi << 8 | lu8_CRCLo);  
+    return (CRC_MSB << 8 | CRC_LSB);  
 }

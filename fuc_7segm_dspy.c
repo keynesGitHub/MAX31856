@@ -223,9 +223,9 @@ void _7segmDspy_ALLOFF(void)
 
 void poll4DIG(void)
 {
-	  if(timeOut.gfg_DIGwait == 1)
+	  if(timeOut.gu8fg_DIGwait == 1)
 		{
-		    timeOut.gfg_DIGwait = 0;
+		    timeOut.gu8fg_DIGwait = 0;
 			
 		    _7segmDspyDIG.gu8_poll4DIG ++;
 			  if(_7segmDspyDIG.gu8_poll4DIG > DIG4Fg){_7segmDspyDIG.gu8_poll4DIG = DIG1Fg;}
