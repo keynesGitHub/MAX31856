@@ -17,6 +17,7 @@
 #include "fuc_7segm_dspy.h"
 #include "fuc_other.h"
 #include "fuc_RXD1.h"
+#include "fuc_TXD1.h"
 
 
 #define PLL_CLOCK   50000000
@@ -48,21 +49,18 @@ uint8_t gu8_Tx0ContentSelect = 0;
 //===
 stru_RXD   RXD0;
 stru_RXD   RXD1;
-//uint8_t gu8_Rx1ReceiveEnable = 1;//need set 1
-//uint8_t gu8A_Rx1ReceiveData[2048] = {0};
-//uint16_t gu16_Rx1ReceiveIndex = 0;
-//uint8_t gu8_Rx1ReceiveCorrect = 0;
-//uint8_t gu8A_Rx1ModBusCRC16Content[10] = {0};
-//uint16_t gu16_Rx1ModBusCRC16Value = 0;
+stru_TXD   TXD0;
+stru_TXD   TXD1;
 
 
-uint8_t gu8_Tx1TransmitEnable = 0;
-uint8_t gu8A_Tx1TransmitData[500] = {0};
-uint16_t gu16_Tx1TransmitIndex = 0;
-uint16_t gu16_Tx1TransmitEnd = 0;
-uint8_t gu8_Tx1ContentSelect = 0;
-uint8_t gu8A_Tx1ModBusCRC16Content[100] = {0};
-uint16_t gu16_Tx1ModBusCRC16Value = 0;
+
+//uint8_t gu8_Tx1TransmitEnable = 0;
+//uint8_t gu8A_Tx1TransmitData[500] = {0};
+//uint16_t gu16_Tx1TransmitIndex = 0;
+//uint16_t gu16_Tx1TransmitEnd = 0;
+//uint8_t gu8_Tx1ContentSelect = 0;
+//uint8_t gu8A_Tx1ModBusCRC16Content[100] = {0};
+//uint16_t gu16_Tx1ModBusCRC16Value = 0;
 
 //===
 
@@ -85,6 +83,8 @@ uni_MAX31856_linearized_thermocouple_temprature   MAX31856LTC;
 stru_MAX31856LTC_calculate   LTC_calcu;   
 stru_7segmDspyDIG            _7segmDspyDIG;
 stru_4DIG_7DISPLAY           _4DIG_7dspy;
+
+stru_ModBus_protocol   MB_procl;
 
 /*==========================================================*/
 
@@ -182,8 +182,9 @@ int main(void)
 		
 //		Flash_XY_Read();
 		
-		timer0Run.gfg_startUp_7segmDspy = 1;
+		timer0Run.gu8fg_startUp_7segmDspy = 1;
 		_7segmDspyDIG.gu8_startUpPoll = _7segmDspy_9xxx_1stON;
+		RXD1.gu8fg_enable = 1;
 		
 		
 		MAX31856_CR0_registerWrite();
@@ -193,9 +194,9 @@ int main(void)
 		{
 		    WDT_RESET_COUNTER();
 			  
-			  if(timeOut.gfg_STWD100NYN_WDI == 1)//WatchDog
+			  if(timeOut.gu8fg_STWD100NYN_WDI == 1)//WatchDog
 				{
-					  timeOut.gfg_STWD100NYN_WDI = 0;
+					  timeOut.gu8fg_STWD100NYN_WDI = 0;
 					  WDI = !WDI;
 				}
 				
@@ -211,8 +212,11 @@ int main(void)
 				
 				if(LTC_calcu.gu32_count > 2999)
 				{   
-				    LTC_calcu.gu32_avgBuf =  LTC_calcu.gu64_sumBuf / 3000;
-					  LTC_calcu.gu32_avg = (LTC_calcu.gu32_avgBuf * 100) / LTC_resolution;
+				    LTC_calcu.gu32_avgBuf =  LTC_calcu.gu64_sumBuf / 3000; 
+					
+				    LTC_calcu.gu32_avg = (LTC_calcu.gu32_avgBuf * 100) / LTC_resolution;
+					
+					  MB_procl.gu16_holdregsr[0] = (uint16_t) ((LTC_calcu.gu32_avgBuf * 10) / LTC_resolution);
 					  
 					  //===pos or neg===
 					  if((MAX31856LTC.gu32_LTC_value & 0x00800000) == 0)//positive temp     
@@ -234,17 +238,17 @@ int main(void)
 				
 						
 				//===7display show temprature===
-				if(timer0Run.gfg_startUp_7segmDspy == 0)
+				if(timer0Run.gu8fg_startUp_7segmDspy == 0)
 				{
 				    _7segmDspy_showMessage();
-					  poll4DIG();
+				    poll4DIG();
 				}
 				//===
 				
 				//=====initial 7display test=====
-				if((timer0Run.gfg_startUp_7segmDspy == 1) && (timeOut.gfg_startUp_7segmDspy == 1))
+				if((timer0Run.gu8fg_startUp_7segmDspy == 1) && (timeOut.gu8fg_startUp_7segmDspy == 1))
 				{
-					  timeOut.gfg_startUp_7segmDspy = 0;
+					  timeOut.gu8fg_startUp_7segmDspy = 0;
 					
 				    switch (_7segmDspyDIG.gu8_startUpPoll)
 						{
@@ -358,7 +362,7 @@ int main(void)
 								break;
 								
 								default:
-						       timer0Run.gfg_startUp_7segmDspy = 0;
+						       timer0Run.gu8fg_startUp_7segmDspy = 0;
 						}
 						
 				}
@@ -366,93 +370,94 @@ int main(void)
 				
 				
         //=====Tx0 fill in content=====
-        if(gu8_Rx0ReceiveCorrect == 1)
-		    {
-		        gu8_Rx0ReceiveCorrect = 0;
-		        gu8_Rx0ReceiveEnable = 0;//Rx OFF
-			      
-					  switch(gu8_Tx0ContentSelect)
-						{
-						    case AllValue:
-									gu8A_Tx0TransmitData[0] = 0x02;
-								  
-									gu8A_Tx0TransmitData[40] = 0x03;
-									
-									gu8_Tx0TransmitIndex = 0;//start transmit from 0
-			            gu8_Tx0TransmitEnd = 41;//need transmit length 41 byte
-			            gu8_Tx0TransmitEnable = 1;//Tx ON
-								break;		
-								
-                case AllGain:
-								  gu8A_Tx0TransmitData[0] = 0x02;
-		              
-					        gu8A_Tx0TransmitData[82] = 0x03;
-			  
-			            gu8_Tx0TransmitIndex = 0;//start transmit from 0
-			            gu8_Tx0TransmitEnd = 83;//need transmit length 83 byte
-			            gu8_Tx0TransmitEnable = 1;//Tx ON
-								break;
+//        if(gu8_Rx0ReceiveCorrect == 1)
+//		    {
+//		        gu8_Rx0ReceiveCorrect = 0;
+//		        gu8_Rx0ReceiveEnable = 0;//Rx OFF
+//			      
+//					  switch(gu8_Tx0ContentSelect)
+//						{
+//						    case AllValue:
+//									gu8A_Tx0TransmitData[0] = 0x02;
+//								  
+//									gu8A_Tx0TransmitData[40] = 0x03;
+//									
+//									gu8_Tx0TransmitIndex = 0;//start transmit from 0
+//			            gu8_Tx0TransmitEnd = 41;//need transmit length 41 byte
+//			            gu8_Tx0TransmitEnable = 1;//Tx ON
+//								break;		
+//								
+//                case AllGain:
+//								  gu8A_Tx0TransmitData[0] = 0x02;
+//		              
+//					        gu8A_Tx0TransmitData[82] = 0x03;
+//			  
+//			            gu8_Tx0TransmitIndex = 0;//start transmit from 0
+//			            gu8_Tx0TransmitEnd = 83;//need transmit length 83 byte
+//			            gu8_Tx0TransmitEnable = 1;//Tx ON
+//								break;
 
-						}   
-				}   
-				//===END===
+//						}   
+//				}   
+				//===
 				
 				//===Tx0 Transmit===
-				if(gu8_Tx0TransmitEnable == 1)
-        {
-		        if(gu8_Tx0TransmitIndex < gu8_Tx0TransmitEnd)
-				    {
-				        UART_WRITE(UART0, gu8A_Tx0TransmitData[gu8_Tx0TransmitIndex]);
-							  while(UART_IS_TX_FULL(UART0)){}
-				        gu8_Tx0TransmitIndex ++;
-				    
-				        if(gu8_Tx0TransmitIndex >= gu8_Tx0TransmitEnd)
-				        {
-					          gu8_Tx0TransmitEnable = 0;//Tx OFF
-									
-									  while(UART_IS_TX_EMPTY(UART0) == 0){}
-					          gu8_Rx0ReceiveEnable = 1;//Rx ON 
-					  
-					          gu8_Tx0TransmitIndex = 0;//clear array index 
-					          gu8_Tx0TransmitEnd = 0;//clear transmit length
-					  
-					          memset(gu8A_Tx0TransmitData , 0x00 , sizeof(gu8A_Tx0TransmitData));
-								}
-						}
-				}
-				//===END===
+//				if(gu8_Tx0TransmitEnable == 1)
+//        {
+//		        if(gu8_Tx0TransmitIndex < gu8_Tx0TransmitEnd)
+//				    {
+//				        UART_WRITE(UART0, gu8A_Tx0TransmitData[gu8_Tx0TransmitIndex]);
+//							  while(UART_IS_TX_FULL(UART0)){}
+//				        gu8_Tx0TransmitIndex ++;
+//				    
+//				        if(gu8_Tx0TransmitIndex >= gu8_Tx0TransmitEnd)
+//				        {
+//					          gu8_Tx0TransmitEnable = 0;//Tx OFF
+//									
+//									  while(UART_IS_TX_EMPTY(UART0) == 0){}
+//					          gu8_Rx0ReceiveEnable = 1;//Rx ON 
+//					  
+//					          gu8_Tx0TransmitIndex = 0;//clear array index 
+//					          gu8_Tx0TransmitEnd = 0;//clear transmit length
+//					  
+//					          memset(gu8A_Tx0TransmitData , 0x00 , sizeof(gu8A_Tx0TransmitData));
+//								}
+//						}
+//				}
+				//===
 				
         //=====Tx1 fill in content=====
-				if(RXD1.gu8_recivVerifyOK == 1)
+				if(RXD1.gu8fg_verifyOK == 1)
 				{
-				    RXD1.gu8_recivVerifyOK = 0;
-		        RXD1.gu8_recivEnable = 0;//rx1 off
+					  RXD1.gu8fg_verifyOK = 0;
+					  memset(RXD1.gu8A_recivData , 0x00 , sizeof(RXD1.gu8A_recivData));
 					
-					  
+				    t1_fillIn_content(MB_procl.gu8_respn_deviceID,  MB_procl.gu8_respn_fc,  MB_procl.gu16_query_startAddrs,  MB_procl.gu16_respn_nbr);//fill in data
+				    TXD1.gu8fg_enable = 1;//start transmit
 				}   
-				//=====End=====
+				//===
 				
 				//=====Tx1 Transmit=====
-				if(gu8_Tx1TransmitEnable == 1)
+				if(TXD1.gu8fg_enable == 1)
 				{
-		        if(gu16_Tx1TransmitIndex < gu16_Tx1TransmitEnd)
+		        if(TXD1.gu16_tramtIndex < TXD1.gu16_tramtEnd)
 				    {	
-				        UART_WRITE(UART1, gu8A_Tx1TransmitData[gu16_Tx1TransmitIndex]);
+				        UART_WRITE(UART1, TXD1.gu8A_tramtData[TXD1.gu16_tramtIndex++]);
 							  while (UART_IS_TX_FULL(UART1)){}
-				        gu16_Tx1TransmitIndex ++;
+				        
 				    
-				        if(gu16_Tx1TransmitIndex >= gu16_Tx1TransmitEnd)
+				        if(TXD1.gu16_tramtIndex >= TXD1.gu16_tramtEnd)
 				        {
-					          gu8_Tx1TransmitEnable = 0;//Tx OFF
+					          TXD1.gu8fg_enable = 0;//tx1 OFF
 									  
 									  while(UART_IS_TX_EMPTY(UART1) == 0){}
 										
-					          RXD1.gu8_recivEnable = 1;//Rx ON	
+					          RXD1.gu8fg_enable = 1;//rx1 ON	
 								
-					          gu16_Tx1TransmitIndex = 0;//clear array index 
-					          gu16_Tx1TransmitEnd = 0;//clear transmit length
-					  
-					          memset(gu8A_Tx1TransmitData , 0x00 , sizeof(gu8A_Tx1TransmitData));
+										TXD1.gu16_tramtEnd = 0;
+					          TXD1.gu16_tramtIndex = 0;
+					      
+					          memset(TXD1.gu8A_tramtData , 0x00 , sizeof(TXD1.gu8A_tramtData));
 								}
 						}				  
 				}
@@ -499,7 +504,7 @@ void Timer0_Handle(void)
 {
 	  if(timer0.gu16_STWD100NYN_WDI_ms > 5000)
 		{
-		    timeOut.gfg_STWD100NYN_WDI = 1;//time out
+		    timeOut.gu8fg_STWD100NYN_WDI = 1;//time out
 			  timer0.gu16_STWD100NYN_WDI_ms = 0;//clear
 		}
 		else 
@@ -509,11 +514,11 @@ void Timer0_Handle(void)
 		
 		//=====
 		
-		if(timer0Run.gfg_startUp_7segmDspy == 1)
+		if(timer0Run.gu8fg_startUp_7segmDspy == 1)
 		{
 		    if(timer0.gu16_startUp_7segmDspy_ms > 250)
 				{
-					  timeOut.gfg_startUp_7segmDspy = 1;//time out
+					  timeOut.gu8fg_startUp_7segmDspy = 1;//time out
 					  timer0.gu16_startUp_7segmDspy_ms = 0;//clear
 				}
 				else 
@@ -526,7 +531,7 @@ void Timer0_Handle(void)
 		
 		if(timer0.gu16_DIGwait_ms > 1)// 1/16 = 0.0625s = 62.5ms  need <62.5ms
 		{
-		    timeOut.gfg_DIGwait = 1;//time out
+		    timeOut.gu8fg_DIGwait = 1;//time out
 				timer0.gu16_DIGwait_ms = 0;//clear
 		}
 		else 
@@ -538,7 +543,7 @@ void Timer0_Handle(void)
 		
 		if(timer0.gu16_pollTEMP_ms > 100)
 		{
-		    timeOut.gfg_pollTEMP = 1;//time out
+		    timeOut.gu8fg_pollTEMP = 1;//time out
 			  timer0.gu16_pollTEMP_ms = 0;//clear
 		}
 		else
@@ -591,7 +596,7 @@ void uart1_handle(void)
 {
     uint32_t u32IntSts = UART1->ISR;
 	
-	  if((u32IntSts & UART_ISR_RDA_INT_Msk) && (RXD1.gu8_recivEnable == 1))
+	  if((u32IntSts & UART_ISR_RDA_INT_Msk) && (RXD1.gu8fg_enable == 1))
 		{
 		    while(UART_IS_RX_READY(UART1))
 				{
@@ -599,20 +604,6 @@ void uart1_handle(void)
 					
 					  r1_receive();
 					  
-			      //---
-						
-//						if(RXD1.gu16_recivIndex < 2047)
-//						{                                          
-//							  if(RXD1.gu16_recivIndex == 2046)
-//								{
-//								    memset(RXD1.gu8A_recivData , 0x00 , sizeof(RXD1.gu8A_recivData));  //Gu8_Rx1ReceiveIndex = (Gu8_Rx1ReceiveIndex == 17) ? 0 : (Gu8_Rx1ReceiveIndex + 1);
-//								    RXD1.gu16_recivIndex = 0;   									
-//								}
-//								else if(RXD1.gu16_recivIndex < 2046)
-//								{
-//								    RXD1.gu16_recivIndex ++;
-//								}
-//						}
 				}
 		}
 }
