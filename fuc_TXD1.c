@@ -36,7 +36,7 @@ void t1_fillIn_content(uint8_t lu8_devID,   uint8_t lu8_fc,   uint16_t lu16_sa, 
 		
 		TXD1.gu16_tramtEnd = pt;
 		TXD1.gu16_tramtIndex = 0;
-	  
+	  TXD1.gu8fg_enable = 1;//t1 ON
 }
 
 

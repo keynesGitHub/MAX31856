@@ -98,7 +98,7 @@ extern uint8_t gu8A_SPI_ReadData[10];
 //===
 typedef struct
 { 
-    uint8_t gu8A_recivData[128];
+    uint8_t gu8A_recivData[2048];
     uint16_t gu16_recivIndex;
 	  uint16_t gu16_recivSX;
 	  uint16_t gu16_recivEX;
