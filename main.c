@@ -53,15 +53,6 @@ stru_TXD   TXD0;
 stru_TXD   TXD1;
 
 
-
-//uint8_t gu8_Tx1TransmitEnable = 0;
-//uint8_t gu8A_Tx1TransmitData[500] = {0};
-//uint16_t gu16_Tx1TransmitIndex = 0;
-//uint16_t gu16_Tx1TransmitEnd = 0;
-//uint8_t gu8_Tx1ContentSelect = 0;
-//uint8_t gu8A_Tx1ModBusCRC16Content[100] = {0};
-//uint16_t gu16_Tx1ModBusCRC16Value = 0;
-
 //===
 
 
@@ -369,71 +360,14 @@ int main(void)
 				//===END===
 				
 				
-        //=====Tx0 fill in content=====
-//        if(gu8_Rx0ReceiveCorrect == 1)
-//		    {
-//		        gu8_Rx0ReceiveCorrect = 0;
-//		        gu8_Rx0ReceiveEnable = 0;//Rx OFF
-//			      
-//					  switch(gu8_Tx0ContentSelect)
-//						{
-//						    case AllValue:
-//									gu8A_Tx0TransmitData[0] = 0x02;
-//								  
-//									gu8A_Tx0TransmitData[40] = 0x03;
-//									
-//									gu8_Tx0TransmitIndex = 0;//start transmit from 0
-//			            gu8_Tx0TransmitEnd = 41;//need transmit length 41 byte
-//			            gu8_Tx0TransmitEnable = 1;//Tx ON
-//								break;		
-//								
-//                case AllGain:
-//								  gu8A_Tx0TransmitData[0] = 0x02;
-//		              
-//					        gu8A_Tx0TransmitData[82] = 0x03;
-//			  
-//			            gu8_Tx0TransmitIndex = 0;//start transmit from 0
-//			            gu8_Tx0TransmitEnd = 83;//need transmit length 83 byte
-//			            gu8_Tx0TransmitEnable = 1;//Tx ON
-//								break;
-
-//						}   
-//				}   
-				//===
-				
-				//===Tx0 Transmit===
-//				if(gu8_Tx0TransmitEnable == 1)
-//        {
-//		        if(gu8_Tx0TransmitIndex < gu8_Tx0TransmitEnd)
-//				    {
-//				        UART_WRITE(UART0, gu8A_Tx0TransmitData[gu8_Tx0TransmitIndex]);
-//							  while(UART_IS_TX_FULL(UART0)){}
-//				        gu8_Tx0TransmitIndex ++;
-//				    
-//				        if(gu8_Tx0TransmitIndex >= gu8_Tx0TransmitEnd)
-//				        {
-//					          gu8_Tx0TransmitEnable = 0;//Tx OFF
-//									
-//									  while(UART_IS_TX_EMPTY(UART0) == 0){}
-//					          gu8_Rx0ReceiveEnable = 1;//Rx ON 
-//					  
-//					          gu8_Tx0TransmitIndex = 0;//clear array index 
-//					          gu8_Tx0TransmitEnd = 0;//clear transmit length
-//					  
-//					          memset(gu8A_Tx0TransmitData , 0x00 , sizeof(gu8A_Tx0TransmitData));
-//								}
-//						}
-//				}
-				//===
-				
         //=====Tx1 fill in content=====
 				if(RXD1.gu8fg_verifyOK == 1)
 				{
 					  RXD1.gu8fg_verifyOK = 0;
+					  RXD1.gu8fg_enable = 0;//rx1 off
 					  memset(RXD1.gu8A_recivData , 0x00 , sizeof(RXD1.gu8A_recivData));
 					
 				    t1_fillIn_content(MB_procl.gu8_respn_deviceID,  MB_procl.gu8_respn_fc,  MB_procl.gu16_query_startAddrs,  MB_procl.gu16_respn_nbr);//fill in data
-				    TXD1.gu8fg_enable = 1;//start transmit
 				}   
 				//===
 				
@@ -465,7 +399,7 @@ int main(void)
 		}   
 }
 
-//=================================================MCU Interrupt==============================================
+//===MCU Interrupt===
 void GPCDEF_IRQHandler(void)
 {
     /* To check if PE.5 interrupt occurred */
@@ -607,24 +541,10 @@ void uart1_handle(void)
 				}
 		}
 }
+//===End===
 
 
-
-//void Rx1ModBusCRC16_Fillin_Buffer(void)
-//{
-//    gu8A_Rx1ModBusCRC16Content[0] = gu8A_Rx1ReceiveData[gu16_Rx1ReceiveIndex - 4];
-//		gu8A_Rx1ModBusCRC16Content[1] = gu8A_Rx1ReceiveData[gu16_Rx1ReceiveIndex - 3];
-//							
-//		gu16_Rx1ModBusCRC16Value = gu8A_Rx1ReceiveData[gu16_Rx1ReceiveIndex - 2];
-//		gu16_Rx1ModBusCRC16Value = (gu16_Rx1ModBusCRC16Value << 8) + gu8A_Rx1ReceiveData[gu16_Rx1ReceiveIndex - 1];
-//}
-
-
-//===================================================End=====================================================================
-
-
-
-//=====================================================MCU Init==============================================================
+//===MCU initial===
 void GPIO_Init(void)
 {
     GPIO_SetMode(PE, BIT5, GPIO_PMD_INPUT);//DRDY of ADS1220
@@ -701,7 +621,7 @@ void WatchDog_Init(void)
 {
     WDT_Open(WDT_TIMEOUT_2POW14, WDT_RESET_DELAY_1026CLK, TRUE, FALSE);
 }
-//=======================================================End======================================================================
+//===End===
 
 
 
