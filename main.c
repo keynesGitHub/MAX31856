@@ -207,7 +207,7 @@ int main(void)
 					
 				    LTC_calcu.gu32_avg = (LTC_calcu.gu32_avgBuf * 100) / LTC_resolution;
 					
-					  MB_procl.gu16_holdregsr[0] = (uint16_t) ((LTC_calcu.gu32_avgBuf * 10) / LTC_resolution);
+					  MB_procl.gu16_holdReg[0] = (uint16_t) ((LTC_calcu.gu32_avgBuf * 100) / LTC_resolution);
 					  
 					  //===pos or neg===
 					  if((MAX31856LTC.gu32_LTC_value & 0x00800000) == 0)//positive temp     
@@ -221,8 +221,6 @@ int main(void)
 						}
 						//===     
 						
-						MAX31856_LTC_realValue(LTC_calcu.gu32_avg);
-							  
 						LTC_calcu.gu32_count = 0;
 						LTC_calcu.gu64_sumBuf = 0;
 				}
@@ -367,7 +365,7 @@ int main(void)
 					  RXD1.gu8fg_enable = 0;//rx1 off
 					  memset(RXD1.gu8A_recivData , 0x00 , sizeof(RXD1.gu8A_recivData));
 					
-				    t1_fillIn_content(MB_procl.gu8_respn_deviceID,  MB_procl.gu8_respn_fc,  MB_procl.gu16_query_startAddrs,  MB_procl.gu16_respn_nbr);//fill in data
+				    t1_fillIn_content(MB_procl.gu8_respn_devID,  MB_procl.gu8_respn_fc,  MB_procl.gu16_query_sta_addr,  MB_procl.gu16_respn_data_nbr);//fill in data
 				}   
 				//===
 				

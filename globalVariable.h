@@ -134,28 +134,15 @@ typedef struct
 extern stru_TXD   TXD1;
 
 
-
-//extern uint8_t gu8_Tx1TransmitEnable;
-//extern uint8_t gu8A_Tx1TransmitData[500];
-//extern uint16_t gu16_Tx1TransmitIndex;
-//extern uint16_t gu16_Tx1TransmitEnd;
-//extern uint8_t gu8_Tx1ContentSelect;
-//extern uint8_t gu8A_Tx1ModBusCRC16Content[100];
-//extern uint16_t gu16_Tx1ModBusCRC16Value;
-
-//---
-
-
-
 typedef struct
 {
-	  uint16_t gu16_holdregsr[32];
+	  uint16_t gu16_holdReg[32];
 	   
-	  uint16_t gu16_query_startAddrs;
+	  uint16_t gu16_query_sta_addr;
 	  
-    uint8_t gu8_respn_deviceID;
+    uint8_t gu8_respn_devID;
 	  uint8_t gu8_respn_fc;
-	  uint16_t gu16_respn_nbr;
+	  uint16_t gu16_respn_data_nbr;
 	  uint16_t gu16_respn_contn[16];
 	  uint16_t gu16_respn_CRC16;
 	

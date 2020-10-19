@@ -31,14 +31,14 @@ void r1_receive(void)
 				
 				if((RXD1.gu8A_recivData[RXD1.gu16_recivSX + 5] == RXD1.gu16_CRC16_MSB) && (RXD1.gu8A_recivData[RXD1.gu16_recivSX + 6] == RXD1.gu16_CRC16_LSB))//CRC16 check
 				{
-						MB_procl.gu8_respn_deviceID = RXD1.gu8A_recivData[RXD1.gu16_recivSX - 1];
+						MB_procl.gu8_respn_devID = RXD1.gu8A_recivData[RXD1.gu16_recivSX - 1];
 					  MB_procl.gu8_respn_fc = RXD1.gu8A_recivData[RXD1.gu16_recivSX];
 							
-						MB_procl.gu16_query_startAddrs = RXD1.gu8A_recivData[RXD1.gu16_recivIndex + 1];
-						MB_procl.gu16_query_startAddrs = ((MB_procl.gu16_query_startAddrs & 0x00FF) << 8) + RXD1.gu8A_recivData[RXD1.gu16_recivSX + 2];
+						MB_procl.gu16_query_sta_addr = RXD1.gu8A_recivData[RXD1.gu16_recivIndex + 1];
+						MB_procl.gu16_query_sta_addr = ((MB_procl.gu16_query_sta_addr & 0x00FF) << 8) + RXD1.gu8A_recivData[RXD1.gu16_recivSX + 2];
 							
-						MB_procl.gu16_respn_nbr = RXD1.gu8A_recivData[RXD1.gu16_recivIndex + 3];
-						MB_procl.gu16_respn_nbr = ((MB_procl.gu16_respn_nbr & 0x00FF) << 8) + RXD1.gu8A_recivData[RXD1.gu16_recivSX + 4];
+						MB_procl.gu16_respn_data_nbr = RXD1.gu8A_recivData[RXD1.gu16_recivIndex + 3];
+						MB_procl.gu16_respn_data_nbr = ((MB_procl.gu16_respn_data_nbr & 0x00FF) << 8) + RXD1.gu8A_recivData[RXD1.gu16_recivSX + 4];
 					
 					  RXD1.gu8fg_verifyOK = 1;//data correct
 					  RXD1.gu16_recivSX = 0;

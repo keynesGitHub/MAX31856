@@ -5,7 +5,7 @@
 #include "globalVariable.h"
 #include "fuc_modbusCRC16.h"
 
-void t1_fillIn_content(uint8_t lu8_devID,   uint8_t lu8_fc,   uint16_t lu16_sa,   uint16_t lu16_nbr)
+void t1_fillIn_content(uint8_t lu8_devID,   uint8_t lu8_fc,   uint16_t lu16_sta_addr,   uint16_t lu16_nbr)
 {
 	  uint16_t i;
 	  uint16_t pt = 3;//inital 3
@@ -18,8 +18,8 @@ void t1_fillIn_content(uint8_t lu8_devID,   uint8_t lu8_fc,   uint16_t lu16_sa, 
 	  //===hold register fill in===
 	  for(i=0; i<lu16_nbr; i++) 
 	  {
-		    TXD1.gu8A_tramtData[pt++] = (uint8_t)((MB_procl.gu16_holdregsr[lu16_sa] & 0xFF00) >> 8);
-			  TXD1.gu8A_tramtData[pt++] = (uint8_t)(MB_procl.gu16_holdregsr[lu16_sa++] & 0x00FF);
+		    TXD1.gu8A_tramtData[pt++] = (uint8_t)((MB_procl.gu16_holdReg[lu16_sta_addr] & 0xFF00) >> 8);
+			  TXD1.gu8A_tramtData[pt++] = (uint8_t)(MB_procl.gu16_holdReg[lu16_sta_addr++] & 0x00FF);
 		}
 		//===
 		
